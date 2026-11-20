@@ -1,0 +1,59 @@
+{%- set soil_label = {"dry": "Dry, water now", "ok": "OK", "wet": "Very wet", "unknown": "No data"} -%}
+{%- set air_label = {"good": "Good", "moderate": "Moderate", "poor": "Poor", "warming": "Sensor warming up", "unknown": "No data"} -%}
+<section id="dashboard">
+  {% if not latest %}
+    <p class="notice">
+      Waiting for the first reading. Flash the ESP32, or run <code>mise run fake-device</code>
+      to send test data.
+    </p>
+  {% endif %}
+
+  <div class="cards">
+    <article class="card status-{{ soil_status }}">
+      <h2>Soil moisture</h2>
+      <p class="value">
+        {%- if latest and latest.soil_pct is not none -%}
+          {{ "%.0f" | format(latest.soil_pct) }}<span class="unit">%</span>
+        {%- else -%}–{%- endif -%}
+      </p>
+      <p class="badge">{{ soil_label[soil_status] }}</p>
+      {% if latest and latest.soil_raw is not none %}<p class="meta">raw {{ latest.soil_raw }}</p>{% endif %}
+    </article>
+
+    <article class="card status-{{ air_level }}">
+      <h2>Air quality</h2>
+      <p class="value">
+        {%- if latest and latest.air_raw is not none -%}
+          {{ latest.air_raw }}
+        {%- else -%}–{%- endif -%}
+      </p>
+      <p class="badge">{{ air_label[air_level] }}</p>
+      <p class="meta">MQ-135 raw, relative (not ppm)</p>
+    </article>
+
+    <article class="card status-{{ 'online' if online else 'offline' }}">
+      <h2>Device</h2>
+      <p class="value small">{{ "Online" if online else "Offline" }}</p>
+      {% if latest %}
+        <p class="badge">{{ last_seen }}</p>
+        <p class="meta">
+          {{ latest.device_id }}
+          {%- if latest.rssi is not none %} · WiFi {{ latest.rssi }} dBm{% endif %}
+          · {{ last_seen_local.strftime("%d %b %H:%M:%S") }}
+        </p>
+      {% else %}
+        <p class="badge">Never seen</p>
+      {% endif %}
+    </article>
+  </div>
+
+  <article class="panel">
+    <h2>Soil moisture <span class="muted">· last {{ chart_hours }} h · %</span></h2>
+    {{ soil_chart }}
+  </article>
+
+  <article class="panel">
+    <h2>Air quality <span class="muted">· last {{ chart_hours }} h · MQ-135 raw</span></h2>
+    {{ air_chart }}
+  </article>
+</section>

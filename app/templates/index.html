@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Garden Monitor</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script type="module" src="/static/datastar.js"></script>
+</head>
+<body>
+  {#
+    One long-lived GET /stream (CQRS "read" side). The server pushes a fresh
+    #dashboard on every new reading; Datastar morphs it in place.
+    data-indicator sets $_live to true while the stream is open (signals starting
+    with "_" are local and are not sent to the server).
+  #}
+  <main data-indicator:_live data-init="@get('/stream', {openWhenHidden: true})">
+    <header class="top">
+      <h1>Garden Monitor</h1>
+      <span class="live" data-show="$_live">● Live</span>
+      <span class="live off" data-show="!$_live">○ Connecting…</span>
+    </header>
+    {{ dashboard }}
+  </main>
+</body>
+</html>
