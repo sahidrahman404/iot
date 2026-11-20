@@ -72,6 +72,20 @@ If the upload can't find the board on Linux, add yourself to the `dialout` group
 sudo usermod -aG dialout $USER
 ```
 
+## Windows
+
+Everything runs natively on Windows 10/11. Use native Windows rather than WSL2: under WSL2 the ESP32 can't reach the server without extra network setup, and flashing over USB needs `usbipd`.
+
+- **Install mise:**
+  1. Run `winget install jdx.mise`.
+  2. Add `mise activate pwsh | Out-String | Invoke-Expression` to your PowerShell `$PROFILE`.
+  3. Run `mise install` and `uv sync` as usual.
+- **Firewall:** the first time you run `mise run dev`, Windows asks whether to allow Python on the network. Allow it on **Private** networks. If your WiFi profile is set to *Public*, either switch it to Private (Settings → Network → WiFi → your network), or the ESP32 won't be able to reach the server.
+- **Your LAN IP:** run `ipconfig` and use the "IPv4 Address" of your WiFi adapter.
+- **USB driver:** Windows usually installs it automatically. If no COM port appears in Device Manager, install the driver for your board's USB chip: CP210x from Silicon Labs, or CH340 from WCH. You don't need the `dialout` group step.
+- **Copying `.env`:** `cp .env.example .env` works in PowerShell.
+- **Database file:** while the server runs, Windows locks `data\iot.duckdb`. Stop the server before copying or backing it up.
+
 ## Calibration
 
 - **Soil.** In `mise run fw:monitor`, note the `soil raw` value with the sensor in dry air and again in a glass of water. Put those numbers in `SOIL_RAW_DRY` and `SOIL_RAW_WET` in `firmware/src/main.cpp`, then reflash.
